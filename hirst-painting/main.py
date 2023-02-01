@@ -1,5 +1,4 @@
 import random
-
 import colorgram
 from turtle import Turtle, Screen
 
@@ -12,13 +11,26 @@ for color in colors:
 
 porto = Turtle()
 porto.penup()
-porto.goto(0,0)
+porto.hideturtle()
+porto.speed('fast')
 screen = Screen()
-screen.screensize(50,50)
 screen.colormode(255)
+number_dots = 100
 
-for dot in range(0, 11):
-    porto.dot(40, random.choice(list_colors))
-    porto.fd(100)
+porto.seth(225)
+porto.fd(300)
+porto.seth(0)
+
+for dot in range(1, number_dots + 1):
+    porto.dot(20, random.choice(list_colors))
+    porto.fd(50)
+
+    if dot % 10 == 0:
+        porto.seth(90)
+        porto.fd(50)
+        porto.seth(180)
+        porto.fd(500)
+        porto.seth(0)
+
 
 screen.exitonclick()
