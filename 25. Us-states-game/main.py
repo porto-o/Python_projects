@@ -31,10 +31,7 @@ while len(guesses) < 50:
         state.write(f'{answer_state}', align="right")
 
     elif answer_state == "Exit":
-        missing_states = []
-        for state in data.state:
-            if state not in guesses:
-                missing_states.append(state)
+        missing_states = [state for state in data.state if state not in guesses]
         new_data = pandas.DataFrame(missing_states)
         new_data.to_csv("missing_states.csv")
 
