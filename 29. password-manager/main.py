@@ -1,8 +1,16 @@
+# Made by: Ismael Porto ☺
+
+import json
 import tkinter as tk
-from tkinter import messagebox
 from random import shuffle, randint, choice
+from tkinter import messagebox
 import pyperclip
 
+
+# JSON operations in python
+# write json.dump()
+# read json.load()
+# update json.update()
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 def generate_password():
@@ -26,24 +34,59 @@ def generate_password():
 
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
+def confirm(website, username, password):
+    confirm_text = f'website: {website}\n\nemail: {username}\n\npassword:{password}\n\nIs it correct?'
+    confirmation = tk.messagebox.askyesno(title="Confirmation", message=confirm_text)
+    return confirmation
+
+
 def save_info():
     website = website_entry.get()
     username = username_entry.get()
     password = password_entry.get()
+    if confirm(website, username, password):
+        new_data = {
+            website: {
+                "email": username,
+                "password": password
+            }
+        }
 
-    if len(website) == 0 or len(username) == 0 or len(password) == 0:
-        messagebox.showwarning(title="Error", message="Please dont leave any fields empty!")
-    else:
-        confirmation = messagebox.askokcancel(title=f'{website}',
-                                              message=f'These are the details entered: \n\nEmail:{username} \nPassword:{password} \n\nIs it ok to save?')
-
-        if confirmation:
-            with open("Passwords.txt", "a") as f:
-                f.write(f'{website} | {username} | {password} \n')
+        if len(website) == 0 or len(username) == 0 or len(password) == 0:
+            messagebox.showwarning(title="Error", message="Please do not leave any fields empty!")
+        else:
+            try:
+                with open("passwords.json", "r") as data_file:
+                    data = json.load(data_file)
+            except FileNotFoundError:
+                with open("passwords.json", "w") as data_file:
+                    json.dump(new_data, data_file, indent=4)
+            else:
+                data.update(new_data)
+                with open("passwords.json", "w") as data_file:
+                    json.dump(data, data_file, indent=4)
+                tk.messagebox.showinfo(title="Success", message="Your information has been saved, your password is on "
+                                                                "your clipboard!")
+            finally:
                 website_entry.delete(0, tk.END)
                 password_entry.delete(0, tk.END)
-            messagebox.showinfo(title="Password Manager", message="Your data has been saved, the password is at your "
-                                                                  "clipboard!")
+
+
+# ---------------------------- FIND PASSWORD ------------------------------- #
+def find_password():
+    website = website_entry.get()
+    try:
+        with open("passwords.json", "r") as data_file:
+            data = json.load(data_file)
+    except FileNotFoundError:
+        tk.messagebox.showerror(title="File not found", message="No Data File Found")
+    else:
+        if website in data:
+            your_data = f'Your access for {website} is:\n\nemail: {data[website]["email"]}' \
+                        f'\npassword: {data[website]["password"]}'
+            tk.messagebox.showinfo(title="Your data", message=your_data)
+        else:
+            tk.messagebox.showinfo(title="ERROR", message=f"No details for {website} exists.")
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -63,13 +106,13 @@ password_label = tk.Label(text="Password:")
 password_label.grid(column=0, row=3)
 
 # Entry
-website_entry = tk.Entry(width=52)
-website_entry.grid(column=1, row=1, columnspan=2, sticky="w")
+website_entry = tk.Entry(width=30)
+website_entry.grid(column=1, row=1, sticky="w")
 website_entry.focus()
 
 username_entry = tk.Entry(width=52)
 username_entry.grid(column=1, row=2, columnspan=2, sticky="w")
-username_entry.insert(tk.END, "ismael.porto2003@gmail.com")
+# username_entry.insert(tk.END, "ismael.porto2003@gmail.com")
 
 password_entry = tk.Entry(width=30)
 password_entry.grid(column=1, row=3, sticky="w")
@@ -81,10 +124,19 @@ pass_btn.grid(column=2, row=3)
 add_button = tk.Button(text="Add", width=44, command=save_info)
 add_button.grid(column=1, row=4, columnspan=2)
 
+search_button = tk.Button(text="Search", width=13, command=find_password)
+search_button.grid(column=2, row=1)
+
 # canvas
 canvas = tk.Canvas(width=200, height=200)
 photo = tk.PhotoImage(file="logo.png")
 canvas.create_image(100, 100, image=photo)
 canvas.grid(column=1, row=0)
 
+with open("default_email.txt", "r") as f:
+    default_email = f.read()
+    username_entry.insert(tk.END, default_email)
+
+window.resizable(False, False)
+window.eval('tk::PlaceWindow . center')
 window.mainloop()
